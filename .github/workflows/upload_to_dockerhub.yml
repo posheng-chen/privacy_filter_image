@@ -1,0 +1,27 @@
+name: Sync GHCR to Docker Hub
+
+on:
+  workflow_dispatch:
+
+env:
+  GHCR_OWNER: posheng-chen
+  IMAGE_NAME: privacy_filter_image
+  IMAGE_TAG: latest
+  DOCKERHUB_USERNAME: poshengchen
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to Docker Hub
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u $DOCKERHUB_USERNAME --password-stdin
+
+      - name: Pull from GHCR
+        run: docker pull ghcr.io/$GHCR_OWNER/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Retag
+        run: docker tag ghcr.io/$GHCR_OWNER/$IMAGE_NAME:$IMAGE_TAG docker.io/$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Push
+        run: docker push docker.io/$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
